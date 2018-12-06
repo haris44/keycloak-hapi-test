@@ -1,0 +1,45 @@
+<head>
+    <div id="username"></div>
+    <script src="http://localhost:8080/auth/js/keycloak.js"></script>
+    <script>
+        var loadData = function (keycloak) {
+            document.getElementById('username').innerText = keycloak.subject;
+
+            var url = 'http://localhost:3000/';
+
+            var req = new XMLHttpRequest();
+            req.open('GET', url, true);
+            req.setRequestHeader('Accept', 'application/json');
+            req.setRequestHeader('Authorization', 'Bearer ' + keycloak.token);
+
+            req.onreadystatechange = function () {
+                if (req.readyState == 4) {
+                    if (req.status == 200) {
+                        alert('Success');
+                    } else if (req.status == 403) {
+                        alert('Forbidden');
+                    }
+                }
+            }
+
+            req.send();
+        };
+
+        window.onload = function () {
+            var keycloak = Keycloak({
+                "clientId": "test-front",
+                "realm": "crm",
+                "auth-server-url": "http://localhost:8080/auth",
+            });
+            keycloak.init({ onLoad: 'login-required' }).success(function (authenticated) {
+                alert(authenticated ? 'authenticated' : 'not authenticated');
+                if (authenticated) {
+                    loadData(keycloak)
+                }
+            }).error(function (err) {
+                console.log(err)
+                alert('failed to initialize');
+            });
+        }
+    </script>
+</head>
